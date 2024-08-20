@@ -1,0 +1,4 @@
+class SocialAccount < User
+
+end
+
