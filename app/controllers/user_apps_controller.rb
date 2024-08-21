@@ -68,15 +68,12 @@ end
 def show
    
       user_app = UserApp.includes(user_app_features: :user_app_sub_features).find(params[:id])
-
-
-
-      render json: user_app, serializer: UserAppSerializer, status: :ok
+      render json: user_app, status: :ok
   
     
  end
 
-	def create
+def create
   @userApp = UserApp.new(user_app_params)
 
   if @userApp.save
@@ -146,6 +143,32 @@ end
 			end
 
 		end
+		if params[:step] == '5'
+		  if @userAppstep2
+		    documents_data = params[:documents]
+		    existing_document_ids = @userAppstep2.user_app_documents.pluck(:id)
+		    provided_document_ids = documents_data.map { |doc| doc[:id] }
+		    documents_to_delete = existing_document_ids - provided_document_ids
+		    @userAppstep2.user_app_documents.where(id: documents_to_delete).destroy_all
+		    documents_data.each do |doc_params|
+		      if doc_params[:id].zero?
+		        @userAppstep2.user_app_documents.create(
+		          user_app_file_name: doc_params[:user_app_file_name],
+		          user_app_file_type: doc_params[:user_app_file_type],
+		          user_app_file_data: doc_params[:user_app_file_data],
+		          user_app_id: @userAppstep2.id
+		        )
+		    	end
+		  	end
+
+		  	if params[:note]
+		  		@userAppstep2.update(note: params[:note])
+		  	end
+
+			end
+			render json: @userAppstep2.user_app_documents, status: :ok
+		end
+
 		if params[:step] == '6'
 			if @userAppstep2
 
@@ -158,8 +181,7 @@ end
 			end
 
 		end
-		if params[:step] == '6'
-		end
+	
 		if params[:step] == '7'
 			if @userAppstep2
 
@@ -172,6 +194,14 @@ end
 			end
 		end
 		if params[:step] == '8'
+			if @userAppstep2 
+				if @userAppstep2.update(coupon_code: params[:coupon_code])
+					render json: @userAppstep2, status: :ok
+				
+				else
+				render json: { errors: @userAppstep2.errors.full_messages }, status: :unprocessable_entity
+				end
+			end
 		end
 
 	end

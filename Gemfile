@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.5'
 
@@ -27,6 +26,7 @@ gem 'activeadmin'
 gem 'sass-rails'
 gem 'rack-cors'
 gem 'pry'
+gem 'active_model_serializers'
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false
