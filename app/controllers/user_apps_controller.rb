@@ -5,7 +5,7 @@ def index
     user_apps_with_features = @userApps.map do |user_app|
       {
         id: user_app.id,
-        name: user_app.name,
+        application_name: user_app.application_name,
         logo: user_app.logo,
         theme_color: user_app.theme_color,
         app_platform: user_app.app_platform,
@@ -18,9 +18,9 @@ def index
         support: user_app.support,
         cloud: user_app.cloud,
         market_place: user_app.market_place,
-        app_id: user_app.app_id,
         user_name: user_app.user_name,
         description: user_app.description,
+        documents: user_app.user_app_documents.all,
         features_count: user_app.user_app_features.all.count,
         features: user_app.user_app_features.map do |feature|
           {
@@ -37,7 +37,7 @@ def index
       }
     end
 
-    render json: { user_apps: user_apps_with_features }, status: :ok
+    render json: user_apps_with_features , status: :ok
   
 end
 
@@ -64,18 +64,25 @@ end
   #       render json: { message: 'Failed to create the UserApp', errors: @userApp.errors.full_messages }, status: :unprocessable_entity
   #     end
 	# end
+
+def show
+   
+      user_app = UserApp.includes(user_app_features: :user_app_sub_features).find(params[:id])
+
+
+
+      render json: user_app, serializer: UserAppSerializer, status: :ok
+  
+    
+ end
+
 	def create
   @userApp = UserApp.new(user_app_params)
 
   if @userApp.save
-    base_app = BaseApp.find(params[:app_id])
-
-    created_features = []
+    base_app = BaseApp.find(params[:base_app])
     base_app.base_app_features.each do |feature|
       user_app_feature = UserAppFeature.create(name: feature.name, user_app_id: @userApp.id)
-
-      created_sub_features = []
-
       feature.base_app_sub_features.each do |subfeature|
         user_app_sub_feature = UserAppSubFeature.create(
           name: subfeature.name,
@@ -83,19 +90,10 @@ end
           description: subfeature.description,
           selected: true
         )
-        created_sub_features << {
-          id: user_app_sub_feature.id,
-          name: user_app_sub_feature.name,
-          description: user_app_sub_feature.description,
-          selected: user_app_sub_feature.selected
-        }
       end
-
-      created_features << {
-        id: user_app_feature.id,
-        name: user_app_feature.name,
-        sub_features: created_sub_features
-      }
+    end
+    base_app.base_app_documents.each do |doc|
+    	user_app_docs = UserAppDocument.create(user_app_file_name: doc.base_app_file_name, user_app_file_type: doc.base_app_file_type, user_app_file_data: doc.base_app_file_data, user_app_id: @userApp.id )
     end
 
     render json: { message: "UserApp created successfully",  userAppData: @userApp }, status: :ok
@@ -106,14 +104,12 @@ end
 
 
 	def update
-		
-		if params[:stage] == '2'
+		@userAppstep2 = UserApp.find(params[:id])
 
-			@userAppstep2 = UserApp.find(params[:id])
-
+		if params[:step] == '2'
 			if @userAppstep2 
 
-				if @userAppstep2.update(name: params[:name], logo: params[:logo], theme_color: params[:theme_color], stage: params[:stage] )
+				if @userAppstep2.update(application_name: params[:application_name], logo: params[:logo], theme_color: params[:theme_color], step: params[:step] )
 						render json: @userAppstep2, status: :ok
 				else
 					 render json: { errors: @userAppstep2.errors.full_messages }, status: :unprocessable_entity
@@ -123,17 +119,65 @@ end
 
 		end
 
-		if params[:stage] == '3'
-			binding.pry
+		if params[:step] == '3'
+			features_data = params[:features]
+      features_data.each do |feature_data|
+        feature = @userAppstep2.user_app_features.find(feature_data[:feature_id])
+        new_subfeature_ids = feature_data[:sub_feature_ids]
+        feature.user_app_sub_features.map do |subfeature|
+        	feature.user_app_sub_features.find(subfeature.id).update(selected: true)
+        end
+        feature.user_app_sub_features.where.not(id: new_subfeature_ids).map do |subfeature|
+        	feature.user_app_sub_features.find(subfeature.id).update(selected: false)
+        end
+      end
+			render json: @userAppstep2, status: :ok
 		end
 
-		if params[:stage] == '4'
+		if params[:step] == '4'
+			if @userAppstep2
+
+				if @userAppstep2.update(app_platform: params[:app_platforms], design: params[:app_designs], basic_build: params[:basic_build], full_build: params[:full_build] )
+						render json: @userAppstep2, status: :ok
+				else
+					 render json: { errors: @userAppstep2.errors.full_messages }, status: :unprocessable_entity
+				end
+
+			end
+
+		end
+		if params[:step] == '6'
+			if @userAppstep2
+
+				if @userAppstep2.update(payment_way: params[:application_budget], budget: params[:application_payment_way] )
+						render json: @userAppstep2, status: :ok
+				else
+					 render json: { errors: @userAppstep2.errors.full_messages }, status: :unprocessable_entity
+				end
+
+			end
+
+		end
+		if params[:step] == '6'
+		end
+		if params[:step] == '7'
+			if @userAppstep2
+
+				if @userAppstep2.update(support: params[:actimize_support], cloud: params[:actimize_cloud], market_place: params[:market_place])
+						render json: @userAppstep2, status: :ok
+				else
+					 render json: { errors: @userAppstep2.errors.full_messages }, status: :unprocessable_entity
+				end
+
+			end
+		end
+		if params[:step] == '8'
 		end
 
 	end
 	private
 
 	def user_app_params
-		params.permit(:user_name, :user_role, :user_email, :user_phone, :app_id, :user_type, :stage)
+		params.permit(:user_name, :user_role, :user_email, :user_phone, :base_app, :step)
 	end
 end

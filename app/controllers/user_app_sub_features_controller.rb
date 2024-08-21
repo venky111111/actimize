@@ -1,0 +1,2 @@
+class UserAppSubFeaturesController < ApplicationController
+end

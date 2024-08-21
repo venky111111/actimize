@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_08_20_061057) do
+ActiveRecord::Schema.define(version: 2024_08_20_115735) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -39,6 +39,15 @@ ActiveRecord::Schema.define(version: 2024_08_20_061057) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["email"], name: "index_admin_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_admin_users_on_reset_password_token", unique: true
+  end
+
+  create_table "base_app_documents", force: :cascade do |t|
+    t.string "base_app_file_name"
+    t.string "base_app_file_type"
+    t.string "base_app_file_data"
+    t.integer "base_app_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "base_app_features", force: :cascade do |t|
@@ -84,6 +93,15 @@ ActiveRecord::Schema.define(version: 2024_08_20_061057) do
     t.text "description"
   end
 
+  create_table "user_app_documents", force: :cascade do |t|
+    t.string "user_app_file_name"
+    t.string "user_app_file_type"
+    t.string "user_app_file_data"
+    t.integer "user_app_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "user_app_features", force: :cascade do |t|
     t.string "name"
     t.integer "user_app_id"
@@ -101,7 +119,7 @@ ActiveRecord::Schema.define(version: 2024_08_20_061057) do
   end
 
   create_table "user_apps", force: :cascade do |t|
-    t.string "name"
+    t.string "application_name"
     t.string "logo"
     t.string "theme_color"
     t.string "app_platform"
@@ -116,12 +134,12 @@ ActiveRecord::Schema.define(version: 2024_08_20_061057) do
     t.boolean "market_place"
     t.integer "user_id"
     t.string "status"
-    t.string "stage"
+    t.string "step"
     t.string "coupon_code"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "user_type"
-    t.integer "app_id"
+    t.integer "base_app"
     t.string "user_name"
     t.string "user_role"
     t.string "user_email"

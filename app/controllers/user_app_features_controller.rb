@@ -20,7 +20,8 @@ class UserAppFeaturesController < ApplicationController
               {
                 id: subfeature.id,
                  name: subfeature.name,
-                description: subfeature.description
+                description: subfeature.description, 
+                selected: subfeature.selected
              }
             end
           }

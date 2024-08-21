@@ -5,6 +5,7 @@ class CreateUserApps < ActiveRecord::Migration[6.1]
       t.string :logo
       t.string :theme_color
       t.string :app_platform
+      
       t.boolean :design
       t.boolean :basic_build
       t.boolean :full_build
